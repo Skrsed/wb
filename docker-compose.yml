@@ -7,9 +7,39 @@ services:
       - ./publisher:/usr/src/app
     networks:
       - nats-streaming-net
+    stdin_open: true
+    tty: true
   nats-streaming:
     # TODO: exaxt version of image
     image: "nats-streaming:latest"
+    command:
+      - "--cluster"
+      - "nats://0.0.0.0:6222"
+      - "--cluster_id"
+      - nats-streaming
+      - "--clustered"
+      - "--cluster_bootstrap"
+      - "--cluster_log_path"
+      - /data/log
+      - "--cluster_node_id"
+      - nats-streaming-node
+      - "--cluster_raft_logging"
+      - "--debug"
+      - "--dir"
+      - /data/msg
+      - "--http_port"
+      - "8222"
+      - "--port"
+      - "4222"
+      - "--store"
+      - file
+      - "--stan_debug"
+      - "--hb_interval"
+      - 2s
+      - "--hb_fail_count"
+      - "1"
+      - "--hb_timeout"
+      - 5s
     networks:
       - nats-streaming-net
     ports:
@@ -29,7 +59,7 @@ services:
     volumes:
       - ./mnt/pg:/var/lib/postgres
     networks:
-      - pgnet
+      - pg-net
     restart: unless-stopped
   admin:
     image: dpage/pgadmin4
@@ -44,3 +74,8 @@ services:
     networks:
       - pg-net
     restart: unless-stopped
+networks:
+  pg-net:
+    driver: bridge
+  nats-streaming-net:
+    driver: bridge

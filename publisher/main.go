@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	stan "github.com/nats-io/stan.go"
@@ -14,18 +13,23 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// set up routes
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", homeHandler)
+	//mux := http.NewServeMux()
+	//mux.HandleFunc("/", homeHandler)
 
 	// TODO: check name conventions
-	clusterID := "cluster"
+	clusterID := "test-cluster"
 	clientID := "wb/publisher"
 
 	// connect to stan
-	sc, _ := stan.Connect(clusterID, clientID, stan.NatsURL("nats://localhost:1234"))
+	defer func() {
+		sc, _ := stan.Connect(clusterID, clientID, stan.NatsURL("nats://localhost:4222"))
 
-	sc.Publish("foo", []byte("Hello World"))
+		err := sc.Publish("foo", []byte("Hello World"))
+
+		fmt.Errorf("%v", err)
+		fmt.Printf("here")
+	}()
 
 	// run listen server
-	log.Fatal(http.ListenAndServe("localhost:80", mux))
+	//log.Fatal(http.ListenAndServe("localhost:80", mux))
 }
