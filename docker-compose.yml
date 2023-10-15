@@ -1,0 +1,46 @@
+services:
+  publisher:
+    build: publisher
+    ports:
+      - "80:80"
+    volumes:
+      - ./publisher:/usr/src/app
+    networks:
+      - nats-streaming-net
+  nats-streaming:
+    # TODO: exaxt version of image
+    image: "nats-streaming:latest"
+    networks:
+      - nats-streaming-net
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: on-failure
+  postgres:
+    # TODO: exaxt version of image
+    image: "postgres:latest"
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "user"
+      #TODO: скрыть данные
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./mnt/pg:/var/lib/postgres
+    networks:
+      - pgnet
+    restart: unless-stopped
+  admin:
+    image: dpage/pgadmin4
+    #todo move into external
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=user@domain.com"
+      - "PGADMIN_DEFAULT_PASSWORD=secret"
+    ports:
+      - "5050:80"
+    volumes:
+      - ./mnt/pgadmin:/var/lib/pgadmin
+    networks:
+      - pg-net
+    restart: unless-stopped
