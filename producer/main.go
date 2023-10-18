@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-
-	stan "github.com/nats-io/stan.go"
+	//"wb/producer/model"
+	"github.com/sunary/sqlize"
+	//stan "github.com/nats-io/stan.go"
+	
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -17,18 +19,18 @@ func main() {
 	//mux.HandleFunc("/", homeHandler)
 
 	// TODO: check name conventions
-	clusterID := "test-cluster"
-	clientID := "wb/publisher"
+	// clusterID := "test-cluster"
+	// clientID := "wb/publisher"
 
 	// connect to stan
-	defer func() {
-		sc, _ := stan.Connect(clusterID, clientID, stan.NatsURL("nats://localhost:4222"))
+	// defer func() {
+	// 	sc, _ := stan.Connect(clusterID, clientID, stan.NatsURL("nats://localhost:4222"))
 
-		err := sc.Publish("foo", []byte("Hello World"))
+	// 	err := sc.Publish("foo", []byte("Hello World"))
 
-		fmt.Errorf("%v", err)
-		fmt.Printf("here")
-	}()
+	// 	fmt.Errorf("%v", err)
+	// 	fmt.Printf("here")
+	// }()
 
 	// run listen server
 	//log.Fatal(http.ListenAndServe("localhost:80", mux))

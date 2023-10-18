@@ -1,76 +1,61 @@
+# TODO: PRITIFY
+version: "3.8"
 services:
-  publisher:
-    build: publisher
-    ports:
-      - "80:80"
-    volumes:
-      - ./publisher:/usr/src/app
-    networks:
-      - nats-streaming-net
-    stdin_open: true
-    tty: true
+  # producer:
+  #   build: publisher
+  #   ports:
+  #     - ${PUBLISHER_PORT}:80
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./publisher:/usr/src/app
+  #   networks:
+  #     - nats-streaming-net
+  #   stdin_open: true #check
+  #   tty: true #check
+  # consumer:
+  #   build: consumer
+  #   ports:
+  #     - ${CONSUMER_PORT}:80
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./consumer:/user/src/app
+  #   stdin_open: true #check
+  #   tty: true # check
   nats-streaming:
-    # TODO: exaxt version of image
-    image: "nats-streaming:latest"
+    image: nats-streaming:0.25-alpine
     command:
-      - "--cluster"
-      - "nats://0.0.0.0:6222"
-      - "--cluster_id"
-      - nats-streaming
-      - "--clustered"
-      - "--cluster_bootstrap"
-      - "--cluster_log_path"
-      - /data/log
-      - "--cluster_node_id"
-      - nats-streaming-node
-      - "--cluster_raft_logging"
-      - "--debug"
-      - "--dir"
-      - /data/msg
-      - "--http_port"
-      - "8222"
-      - "--port"
-      - "4222"
-      - "--store"
-      - file
-      - "--stan_debug"
-      - "--hb_interval"
-      - 2s
-      - "--hb_fail_count"
-      - "1"
-      - "--hb_timeout"
-      - 5s
+      - --cluster_id
+      - ${NATS_STAN_CLUSTER_ID}
+    volumes:
+      - ./.mnt/nats-stan:/var/lib/nats-stan/data
     networks:
       - nats-streaming-net
     ports:
-      - "4222:4222"
-      - "8222:8222"
-    restart: on-failure
+      - ${NATS_STAN_STORE_PORT}:4222
+      - ${NATS_STAN_MONITORING_PORT}:8222
+    restart: unless-stopped
   postgres:
-    # TODO: exaxt version of image
-    image: "postgres:latest"
-    environment:
-      POSTGRES_DB: "postgres"
-      POSTGRES_USER: "user"
-      #TODO: скрыть данные
-      POSTGRES_PASSWORD: "password"
+    image: postgres:16-alpine
+    hostname: ${POSTGRES_HOST}
     ports:
-      - "5432:5432"
+      - 5432:${POSTGRES_PORT}      
+    env_file:
+      - .env
     volumes:
-      - ./mnt/pg:/var/lib/postgres
+      - ./.mnt/pg:/var/lib/pg/data
     networks:
       - pg-net
     restart: unless-stopped
-  admin:
+  pgadmin:
     image: dpage/pgadmin4
-    #todo move into external
-    environment:
-      - "PGADMIN_DEFAULT_EMAIL=user@domain.com"
-      - "PGADMIN_DEFAULT_PASSWORD=secret"
     ports:
-      - "5050:80"
+      - ${PGADMIN_PORT}:80
+    env_file:
+      - .env
     volumes:
-      - ./mnt/pgadmin:/var/lib/pgadmin
+      - ./.mnt/pgadmin:/var/lib/pgadmin/data
     networks:
       - pg-net
     restart: unless-stopped
