@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	//"wb/producer/model"
-	"github.com/sunary/sqlize"
-	//stan "github.com/nats-io/stan.go"
-	
+	//stan "github.com/nats-io/stan.go
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
