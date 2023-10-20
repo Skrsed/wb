@@ -48,17 +48,17 @@ services:
     networks:
       - pg-net
     restart: unless-stopped
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - ${PGADMIN_PORT}:80
-    env_file:
-      - .env
-    volumes:
-      - ./.mnt/pgadmin:/var/lib/pgadmin/data
-    networks:
-      - pg-net
-    restart: unless-stopped
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   ports:
+  #     - ${PGADMIN_PORT}:80
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./.mnt/pgadmin:/var/lib/pgadmin/data
+  #   networks:
+  #     - pg-net
+  #   restart: unless-stopped
 networks:
   pg-net:
     driver: bridge
