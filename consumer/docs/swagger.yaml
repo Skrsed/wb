@@ -1,0 +1,198 @@
+definitions:
+  domain.Delivery:
+    properties:
+      address:
+        example: Ploshad Mira 15
+        type: string
+      city:
+        example: Kiryat Mozkin
+        type: string
+      email:
+        description: TODO validate
+        example: test@gmail.com
+        type: string
+      name:
+        example: Test Testov
+        type: string
+      order_uid:
+        example: b563feb7b2b84b6test
+        type: string
+      phone:
+        description: TODO validate
+        example: "+9720000000"
+        type: string
+      region:
+        example: Kraiot
+        type: string
+      zip:
+        example: "2639809"
+        type: string
+    type: object
+  domain.Item:
+    properties:
+      brand:
+        example: Vivienne Sabo
+        type: string
+      chrt_id:
+        example: 9934930
+        type: integer
+      name:
+        example: Mascaras
+        type: string
+      nm_id:
+        example: 2389212
+        type: integer
+      order_uid:
+        example: b563feb7b2b84b6test
+        type: string
+      price:
+        description: TODO decimal
+        example: "453"
+        type: string
+      rid:
+        example: ab4219087a764ae0btest
+        type: string
+      sale:
+        example: 30
+        type: integer
+      size:
+        example: 0
+        type: integer
+      status:
+        example: 202
+        type: integer
+      total_price:
+        example: 317
+        type: integer
+      track_number:
+        description: TODO DRY
+        example: WBILMTESTTRACK
+        type: string
+    type: object
+  domain.Payment:
+    properties:
+      amount:
+        example: 1817
+        type: integer
+      bank:
+        example: alpha
+        type: string
+      currency:
+        type: string
+      custom_fee:
+        example: 0
+        type: integer
+      delivery_cost:
+        example: 1500
+        type: integer
+      goods_total:
+        example: 317
+        type: integer
+      payment_dt:
+        example: 1637907727
+        type: integer
+      provider:
+        example: wbpay
+        type: string
+      request_id:
+        type: string
+      transaction:
+        example: b563feb7b2b84b6test
+        type: string
+    type: object
+  httpHandler.ErrorResponse:
+    properties:
+      message:
+        example: Error message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  httpHandler.OrderResponse:
+    properties:
+      customer_id:
+        example: test
+        type: string
+      date_created:
+        example: "2021-11-26T06:22:19Z"
+        type: string
+      delivery:
+        $ref: '#/definitions/domain.Delivery'
+      delivery_service:
+        example: meest
+        type: string
+      entry:
+        example: WBIL
+        type: string
+      internal_signature:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/domain.Item'
+        type: array
+      locale:
+        example: en
+        type: string
+      oof_shard:
+        example: 1
+        type: integer
+      order_uid:
+        description: 19 sumbols uuid? // maybe type of uuid
+        example: b563feb7b2b84b6test
+        type: string
+      payment:
+        $ref: '#/definitions/domain.Payment'
+      shardkey:
+        example: 9
+        type: integer
+      sm_id:
+        example: 99
+        type: integer
+      track_number:
+        description: 14 sub
+        example: WBILMTESTTRACK
+        type: string
+    required:
+    - delivery
+    - items
+    - order_uid
+    - payment
+    type: object
+info:
+  contact: {}
+paths:
+  /order/{uid}:
+    get:
+      consumes:
+      - application/json
+      description: Get order with related entities by order_uid
+      parameters:
+      - description: Order UID
+        in: path
+        name: order_uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpHandler.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpHandler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpHandler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpHandler.ErrorResponse'
+      summary: Get an order by ID
+      tags:
+      - Order
+swagger: "2.0"

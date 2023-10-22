@@ -1,7 +1,7 @@
 package domain
 
 type Payment struct {
-	ID           int    `json:"-"`
+	ID           int    `json:"id" example:"123"`
 	Transaction  string `json:"transaction" example:"b563feb7b2b84b6test"`
 	RequestId    string `json:"request_id"`
 	Currency     string `json:"currency"`

@@ -1,9 +1,8 @@
-package repository
+package pgRepository
 
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,15 +15,22 @@ type DB struct {
 	*pgxpool.Pool
 }
 
+type Credentials struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	DB       string
+}
+
 // NewDB creates a new PostgreSQL database instance
-func NewDB(ctx context.Context) (*DB, error) {
+func NewDBConnection(ctx context.Context, cr *Credentials) (*DB, error) {
 	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		//os.Getenv("POSTGRES_HOST"), only inside container
-		"0.0.0.0",
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_DB"),
+		cr.User,
+		cr.Password,
+		cr.Host,
+		cr.Port,
+		cr.DB,
 	)
 
 	db, err := pgxpool.New(ctx, dsn)

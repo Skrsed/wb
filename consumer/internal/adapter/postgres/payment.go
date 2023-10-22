@@ -1,28 +1,16 @@
-package repository
+package pgRepository
 
 import (
 	"consumer/internal/core/domain"
 	"context"
 )
 
-/**
- * PaymentRepository implements port.PaymentRepository interface
- * and provides an access to the postgres database
- */
-type PaymentRepository struct {
-	db *DB
-}
-
-// NewPaymentRepository creates a new payment repository instance
-func NewPaymentRepository(db *DB) *PaymentRepository {
-	return &PaymentRepository{
-		db,
-	}
-}
-
 // CreatePayment creates a new payment record in the database
 // TODO: Try to answer why we're returning pointer insted of actual value? Where that value is? Leaking or not?
-func (pr *PaymentRepository) CreatePayment(ctx context.Context, payment *domain.Payment) (*domain.Payment, error) {
+func (pr *PostgresRepository) CreatePayment(
+	ctx context.Context,
+	payment *domain.Payment,
+) (*domain.Payment, error) {
 	sql := `INSERT INTO payments (
 		transaction,
 		request_id,

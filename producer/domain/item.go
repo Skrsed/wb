@@ -1,7 +1,7 @@
 package domain
 
 type Item struct {
-	ID          int    `json:"-"`
+	ID          int    `json:"id" example:"123"`
 	ChrtId      int    `json:"chrt_id" example:"9934930"`
 	TrackNumber string `json:"track_number" example:"WBILMTESTTRACK"` //TODO DRY
 	Price       string `json:"price" example:"453"`                   // TODO decimal

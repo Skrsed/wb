@@ -1,4 +1,4 @@
-package repository
+package pgRepository
 
 import (
 	"fmt"
@@ -13,8 +13,9 @@ func Connect() (stan.Conn, error) {
 	return stan.Connect(clusterID, clientID, stan.NatsURL("nats://localhost:4222"))
 }
 
-func Publish(sc stan.Conn, message []byte) {
-	err := sc.Publish("foo", []byte("Hello World"))
+func Publish(sc stan.Conn, message string) {
+	// TODO: .env
+	err := sc.Publish("wb_orders", []byte(message))
 
 	if err != nil {
 		// TODO: log error

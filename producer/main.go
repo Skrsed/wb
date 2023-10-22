@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	//"wb/producer/repository/stan"
+	//"wb/producer/pgRepository/stan"
 	//stan "github.com/nats-io/stan.go
 )
 

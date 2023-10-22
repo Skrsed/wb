@@ -1,7 +1,7 @@
 package domain
 
 type Delivery struct {
-	ID       string `json:"-"`
+	ID       string `json:"id" example:"123"`
 	Name     string `json:"name" example:"Test Testov"`
 	Phone    string `json:"phone" example:"+9720000000"` //TODO validate
 	Zip      string `json:"zip" example:"2639809"`

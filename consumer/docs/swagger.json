@@ -1,0 +1,278 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/order/{uid}": {
+            "get": {
+                "description": "Get order with related entities by order_uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get an order by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order UID",
+                        "name": "order_uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpHandler.OrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpHandler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpHandler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpHandler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Delivery": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "Ploshad Mira 15"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "Kiryat Mozkin"
+                },
+                "email": {
+                    "description": "TODO validate",
+                    "type": "string",
+                    "example": "test@gmail.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Test Testov"
+                },
+                "order_uid": {
+                    "type": "string",
+                    "example": "b563feb7b2b84b6test"
+                },
+                "phone": {
+                    "description": "TODO validate",
+                    "type": "string",
+                    "example": "+9720000000"
+                },
+                "region": {
+                    "type": "string",
+                    "example": "Kraiot"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "2639809"
+                }
+            }
+        },
+        "domain.Item": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string",
+                    "example": "Vivienne Sabo"
+                },
+                "chrt_id": {
+                    "type": "integer",
+                    "example": 9934930
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Mascaras"
+                },
+                "nm_id": {
+                    "type": "integer",
+                    "example": 2389212
+                },
+                "order_uid": {
+                    "type": "string",
+                    "example": "b563feb7b2b84b6test"
+                },
+                "price": {
+                    "description": "TODO decimal",
+                    "type": "string",
+                    "example": "453"
+                },
+                "rid": {
+                    "type": "string",
+                    "example": "ab4219087a764ae0btest"
+                },
+                "sale": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "size": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 202
+                },
+                "total_price": {
+                    "type": "integer",
+                    "example": 317
+                },
+                "track_number": {
+                    "description": "TODO DRY",
+                    "type": "string",
+                    "example": "WBILMTESTTRACK"
+                }
+            }
+        },
+        "domain.Payment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 1817
+                },
+                "bank": {
+                    "type": "string",
+                    "example": "alpha"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "custom_fee": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "delivery_cost": {
+                    "type": "integer",
+                    "example": 1500
+                },
+                "goods_total": {
+                    "type": "integer",
+                    "example": 317
+                },
+                "payment_dt": {
+                    "type": "integer",
+                    "example": 1637907727
+                },
+                "provider": {
+                    "type": "string",
+                    "example": "wbpay"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "transaction": {
+                    "type": "string",
+                    "example": "b563feb7b2b84b6test"
+                }
+            }
+        },
+        "httpHandler.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Error message"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "httpHandler.OrderResponse": {
+            "type": "object",
+            "required": [
+                "delivery",
+                "items",
+                "order_uid",
+                "payment"
+            ],
+            "properties": {
+                "customer_id": {
+                    "type": "string",
+                    "example": "test"
+                },
+                "date_created": {
+                    "type": "string",
+                    "example": "2021-11-26T06:22:19Z"
+                },
+                "delivery": {
+                    "$ref": "#/definitions/domain.Delivery"
+                },
+                "delivery_service": {
+                    "type": "string",
+                    "example": "meest"
+                },
+                "entry": {
+                    "type": "string",
+                    "example": "WBIL"
+                },
+                "internal_signature": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Item"
+                    }
+                },
+                "locale": {
+                    "type": "string",
+                    "example": "en"
+                },
+                "oof_shard": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "order_uid": {
+                    "description": "19 sumbols uuid? // maybe type of uuid",
+                    "type": "string",
+                    "example": "b563feb7b2b84b6test"
+                },
+                "payment": {
+                    "$ref": "#/definitions/domain.Payment"
+                },
+                "shardkey": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "sm_id": {
+                    "type": "integer",
+                    "example": 99
+                },
+                "track_number": {
+                    "description": "14 sub",
+                    "type": "string",
+                    "example": "WBILMTESTTRACK"
+                }
+            }
+        }
+    }
+}
