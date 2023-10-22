@@ -13,6 +13,5 @@ type Item struct {
 	NmId        int    `json:"nm_id" example:"2389212"`
 	Brand       string `json:"brand" example:"Vivienne Sabo"`
 	Status      uint16 `json:"status" example:"202"`
-
-	OrderUid string `json:"order_uid" example:"b563feb7b2b84b6test"`
+	OrderUid    string `json:"order_uid" example:"b563feb7b2b84b6test"`
 }

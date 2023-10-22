@@ -7,6 +7,6 @@ import (
 
 type OrderService interface {
 	// Order
-	GetOrderById(ctx context.Context, orderId int) (*domain.Order, error)
-	GetOrdersList(ctx context.Context, limit int) ([]*domain.Order, error)
+	GetOrderByUid(ctx context.Context, uid string) (*domain.Order, error)
+	//GetOrdersList(ctx context.Context, limit int) ([]*domain.Order, error)
 }

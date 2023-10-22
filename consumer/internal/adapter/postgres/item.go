@@ -52,3 +52,52 @@ func (pr *PostgresRepository) CreateItems(ctx context.Context, Items *[]*domain.
 
 	return &res, nil
 }
+
+func (pr *PostgresRepository) GetItemsByOrderUid(
+	ctx context.Context,
+	uid string,
+) (*[]*domain.Item, error) {
+	// TODO: extend with fields
+	sql := `SELECT * FROM items WHERE uid = $1`
+
+	rows, err := pr.db.Query(ctx, sql, uid)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []*domain.Item
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var item domain.Item
+		err := rows.Scan(
+			&item.ID,
+			&item.ChrtId,
+			&item.TrackNumber,
+			&item.Price,
+			&item.Rid,
+			&item.Name,
+			&item.Sale,
+			&item.Size,
+			&item.TotalPrice,
+			&item.NmId,
+			&item.Brand,
+			&item.Status,
+			&item.OrderUid,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, &item)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &items, nil
+}

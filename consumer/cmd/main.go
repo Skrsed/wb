@@ -3,9 +3,12 @@ package main
 //"consumer/itnernal/adapter/postgres/pgRepository"
 
 import (
+	cacheRepository "consumer/internal/adapter/cache"
 	httpHandler "consumer/internal/adapter/http"
 	pgRepository "consumer/internal/adapter/postgres"
 	stanHandler "consumer/internal/adapter/stan"
+
+	"consumer/internal/core/service"
 	"context"
 	"log/slog"
 	"os"
@@ -83,11 +86,7 @@ func initStan() *stanHandler.Stan {
 	return stanInstance
 }
 
-func initHttp(dbRepository pgRepository.DB) *httpHandler.Router {
-	orderService := service.NewOrderService(
-		catche,
-		dbRepository
-	)
+func initHttp(orderService *service.OrderService) {
 	orderHandler := httpHandler.NewOrderHandler(orderService)
 	router, err := httpHandler.NewRouter(orderHandler)
 
@@ -119,7 +118,16 @@ func main() {
 	ns := initStan()
 	defer ns.Close()
 
-	http := initHttp(db)
+	cache := cacheRepository.NewOrderCacheRepository()
+	pg := pgRepository.NewPostgresRepository(db)
+
+	ordSvc, err := service.NewOrderService(pg, cache)
+	if err != nil {
+		slog.Error("Error while loading dependencies", "error", err)
+		os.Exit(1)
+	}
+
+	initHttp(ordSvc)
 
 	slog.Info("waiting for messages...")
 

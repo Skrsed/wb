@@ -45,3 +45,43 @@ func (pr *PostgresRepository) CreatePayment(
 
 	return &res, nil
 }
+
+func (pr *PostgresRepository) GetPaymentById(
+	ctx context.Context,
+	id int,
+) (*domain.Payment, error) {
+	sql := `SELECT
+		id,
+		transaction,
+		request_id,
+		currency,
+		provider,
+		amount,
+		payment_dt,
+		bank,
+		delivery_cost,
+		goods_total,
+		custom_fee
+	FROM payments WHERE id = $1`
+
+	res := domain.Payment{}
+	err := pr.db.QueryRow(ctx, sql, id).Scan(
+		res.ID,
+		res.Transaction,
+		res.RequestId,
+		res.Currency,
+		res.Provider,
+		res.Amount,
+		res.PaymentDt,
+		res.Bank,
+		res.DeliveryCost,
+		res.GoodsTotal,
+		res.CustomFee,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}

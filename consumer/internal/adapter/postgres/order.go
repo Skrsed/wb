@@ -93,3 +93,47 @@ func (pr *PostgresRepository) CreateOrder(ctx context.Context, Order *domain.Ord
 
 	return &res, nil
 }
+
+func (pr *PostgresRepository) GetOrderByUid(
+	ctx context.Context,
+	uuid string,
+) (*domain.Order, error) {
+	sql := `SELECT
+		order_uid,
+		track_number,
+		entry,
+		delivery_id,
+		payment_id,
+		locale,
+		internal_signature,
+		customer_id,
+		delivery_service,
+		shardkey,
+		sm_id,
+		date_created,
+		oof_shard
+	FROM orders WHERE uid = $1`
+
+	res := domain.Order{}
+	err := pr.db.QueryRow(ctx, sql, uuid).Scan(
+		res.Uid,
+		res.TrackNumber,
+		res.Entry,
+		res.DeliveryId,
+		res.PaymentId,
+		res.Locale,
+		res.InternalSignature,
+		res.CustomerId,
+		res.DeliveryService,
+		res.Shardkey,
+		res.SmId,
+		res.DateCreated,
+		res.OofShard,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}

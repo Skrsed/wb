@@ -2,6 +2,7 @@ package httpHandler
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -51,4 +52,14 @@ func (r *Router) Serve(cr *Credentials) error {
 	listenAddr := fmt.Sprintf("%s:%s", cr.Host, cr.Port)
 
 	return r.Run(listenAddr)
+}
+
+// validationError sends an error response for some specific request validation error
+func validationError(ctx *gin.Context, err error) {
+	ctx.JSON(http.StatusBadRequest, err)
+}
+
+// handleError determines the status code of an error and returns a JSON response with the error message and status code
+func handleError(ctx *gin.Context, err error) {
+	ctx.JSON(http.StatusInternalServerError, err)
 }

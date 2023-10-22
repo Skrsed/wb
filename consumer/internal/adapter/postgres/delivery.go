@@ -41,3 +41,30 @@ func (pr *PostgresRepository) CreateDelivery(
 
 	return &res, nil
 }
+
+func (pr *PostgresRepository) GetDeliveryById(
+	ctx context.Context,
+	id int,
+) (*domain.Delivery, error) {
+	// TODO: extend with fields
+	sql := `SELECT * FROM delivery WHERE id = $1`
+
+	res := domain.Delivery{}
+	err := pr.db.QueryRow(ctx, sql, id).Scan(
+		res.ID,
+		res.Name,
+		res.Phone,
+		res.Zip,
+		res.City,
+		res.Address,
+		res.Region,
+		res.Email,
+		res.OrderUid,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}

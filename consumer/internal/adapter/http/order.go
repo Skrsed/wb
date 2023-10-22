@@ -2,13 +2,13 @@ package httpHandler
 
 import (
 	"consumer/internal/core/port"
-	svc "consumer/internal/core/port"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type OrderHandler struct {
-	svc.OrderService
+	svc port.OrderService
 }
 
 // NewOrderHandler creates a new OrderHandler instance
@@ -16,6 +16,11 @@ func NewOrderHandler(svc port.OrderService) *OrderHandler {
 	return &OrderHandler{
 		svc,
 	}
+}
+
+// getOrderRequest represents a request body for retrieving an order
+type getOrderRequest struct {
+	UID string `uri:"uid" binding:"required" example:"b563feb7b2b84b6test"`
 }
 
 // GetOrderById godoc
@@ -31,8 +36,21 @@ func NewOrderHandler(svc port.OrderService) *OrderHandler {
 // @Failure      500  {object}  ErrorResponse
 // @Router       /order/{uid} [get]
 func (h *OrderHandler) GetOrderById(ctx *gin.Context) {
+	var req getOrderRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
 
+	order, err := h.svc.GetOrderByUid(ctx, req.UID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, OrderResponse{
+		order,
+	})
 }
 
-func (h *OrderHandler) GetListOrders(ctx *gin.Context) {
-}
+func (h *OrderHandler) GetListOrders(ctx *gin.Context) {}
