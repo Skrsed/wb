@@ -1,9 +1,8 @@
 package pgRepository
 
 import (
-	"fmt"
-
 	stan "github.com/nats-io/stan.go"
+	"golang.org/x/exp/slog"
 )
 
 func Connect() (stan.Conn, error) {
@@ -19,7 +18,7 @@ func Publish(sc stan.Conn, message string) {
 
 	if err != nil {
 		// TODO: log error
-		fmt.Println(err)
+		slog.Error("Error publishing message", "error", err)
 	}
 }
 

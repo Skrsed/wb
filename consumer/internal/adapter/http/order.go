@@ -2,7 +2,7 @@ package httpHandler
 
 import (
 	"consumer/internal/core/port"
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,14 +39,14 @@ type getOrderRequest struct {
 func (h *OrderHandler) GetOrderByUId(ctx *gin.Context) {
 	var req getOrderRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		fmt.Println(err)
+		slog.Error("GetOrderByUId error binding params", "error", err)
 		validationError(ctx, err)
 		return
 	}
 
 	order, err := h.svc.GetOrderByUid(ctx, req.UID)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("GetOrderByUId error while getting order by uid", "error", err)
 		handleError(ctx, err)
 		return
 	}

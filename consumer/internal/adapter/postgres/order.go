@@ -23,7 +23,7 @@ func (pr *PostgresRepository) CreateOrderCascade(
 	defer prtx.Rollback(ctx)
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
+			slog.Info("CreateOrderCascade recovered from panic", "error", err)
 		}
 	}()
 
@@ -145,7 +145,7 @@ func (pr *PostgresRepository) GetOrderByUid(
 	)
 
 	if err != nil {
-		fmt.Println(err)
+		slog.Info("GetOrderByUid scanning error", "error", err)
 		return nil, err
 	}
 
@@ -181,7 +181,7 @@ func (pr *PostgresRepository) GetAllOrders(ctx context.Context) (*map[string]*do
 		)
 
 		if err != nil {
-			fmt.Println(err)
+			slog.Info("GetAllOrders error trying to scan orders", "error", err)
 		}
 		order.Items = make([]*domain.Item, 0, 100)
 		orders[order.Uid] = &order

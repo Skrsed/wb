@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 	"wb/producer/domain"
 	stream "wb/producer/repository"
 	"wb/producer/utils"
+
+	"log/slog"
 
 	"github.com/brianvoe/gofakeit/v6"
 )
@@ -17,7 +18,7 @@ func main() {
 	defer stream.Close(conn)
 
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("Error connecting to nats", "error", err)
 	}
 
 	for {
@@ -28,8 +29,7 @@ func main() {
 
 		jsonData, _ := json.Marshal(order)
 		stream.Publish(conn, string(jsonData))
-		//slog.Info("Message is published")
 
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second)
 	}
 }

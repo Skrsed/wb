@@ -3,7 +3,8 @@ package pgRepository
 import (
 	"consumer/internal/core/domain"
 	"context"
-	"fmt"
+
+	"golang.org/x/exp/slog"
 )
 
 // CreatePayment creates a new payment record in the database
@@ -132,7 +133,9 @@ func (pr *PostgresRepository) PopulateMapWithPayments(
 			&payment.OrderUid,
 		)
 
-		fmt.Println(err)
+		if err != nil {
+			slog.Error("PopulateMapWithPayments error while scanning", "error", err)
+		}
 
 		(*orders)[payment.OrderUid].Payment = payment
 	}

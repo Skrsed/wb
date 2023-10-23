@@ -6,7 +6,6 @@ import (
 	"consumer/internal/core/domain"
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 )
 
@@ -70,7 +69,7 @@ func (svc *OrderService) SaveOrder(ctx context.Context, order *domain.Order) err
 
 	err = svc.orderCache.SaveOrder(order)
 	if err != nil {
-		fmt.Println("Error while saving in cache", err)
+		slog.Error("SaveOrder error saving cache", "error", err)
 		return err
 	}
 

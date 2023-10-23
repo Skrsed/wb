@@ -3,7 +3,7 @@ package pgRepository
 import (
 	"consumer/internal/core/domain"
 	"context"
-	"fmt"
+	"log/slog"
 )
 
 // CreateDelivery creates a new Delivery record in the database
@@ -84,7 +84,7 @@ func (pr *PostgresRepository) GetDeliveryByUid(
 	)
 
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("GetDeliveryByUid scanning error", "error", err)
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func (pr *PostgresRepository) PopulateMapWithDelivery(
 ) error {
 	rows, err := pr.db.Query(ctx, "SELECT * from delivery")
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("PopulateMapWithDelivery error fetching delivery", "error", err)
 
 		return err
 	}

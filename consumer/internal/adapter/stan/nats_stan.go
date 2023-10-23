@@ -39,8 +39,7 @@ func NewStanConnection(cr *Credentials) (*Stan, error) {
 
 func (nsc *Stan) Subscribe(ctx context.Context, ordSvc *service.OrderService) error {
 	channelName := "wb_orders"
-	sub, err := nsc.conn.Subscribe(channelName, onMessage(ctx, ordSvc), stan.StartWithLastReceived()) // stan.DeliverAllAvailable()
-
+	sub, err := nsc.conn.Subscribe(channelName, onMessage(ctx, ordSvc), stan.DeliverAllAvailable())
 	if err != nil {
 		return err
 	}
