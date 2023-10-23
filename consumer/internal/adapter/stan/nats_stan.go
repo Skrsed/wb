@@ -2,6 +2,9 @@ package stan
 
 import (
 	"consumer/internal/core/domain"
+	"consumer/internal/core/port"
+	"consumer/internal/core/service"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -34,9 +37,9 @@ func NewStanConnection(cr *Credentials) (*Stan, error) {
 	}, nil
 }
 
-func (nsc *Stan) Subscribe() error {
+func (nsc *Stan) Subscribe(ctx context.Context, ordSvc *service.OrderService) error {
 	channelName := "wb_orders"
-	sub, err := nsc.conn.Subscribe(channelName, onMessage, stan.DeliverAllAvailable()) // stan.DeliverAllAvailable()
+	sub, err := nsc.conn.Subscribe(channelName, onMessage(ctx, ordSvc), stan.StartWithLastReceived()) // stan.DeliverAllAvailable()
 
 	if err != nil {
 		return err
@@ -47,15 +50,32 @@ func (nsc *Stan) Subscribe() error {
 	return nil
 }
 
-func onMessage(m *stan.Msg) {
-	var order *domain.Order
-	err := json.Unmarshal(m.Data, &order)
+func onMessage(ctx context.Context, ordSvc port.OrderService) func(m *stan.Msg) {
+	return func(m *stan.Msg) {
+		order, err := UnmarshalTheMessage(m)
 
+		if err != nil {
+			slog.Error("Error while unmarshaling the message", "error", err)
+		}
+
+		err = ordSvc.SaveOrder(ctx, order)
+		if err != nil {
+			slog.Error("Error while creating the order", "error", err)
+		}
+	}
+}
+
+func UnmarshalTheMessage(m *stan.Msg) (*domain.Order, error) {
+	order := domain.Order{}
+
+	err := json.Unmarshal(m.Data, &order)
+	//err = validator.Struct(&order)
 	if err != nil {
-		slog.Error("Error while unmarshaling the message", "error", err)
+		fmt.Printf("error while unmarshalling message to model : %s", err.Error())
+		return nil, err
 	}
 
-	fmt.Println(order)
+	return &order, nil
 }
 
 func (nsc *Stan) Close() {

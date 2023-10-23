@@ -3,39 +3,39 @@ package main
 //"consumer/itnernal/adapter/postgres/pgRepository"
 
 import (
+	_ "consumer/docs"
 	cacheRepository "consumer/internal/adapter/cache"
 	httpHandler "consumer/internal/adapter/http"
 	pgRepository "consumer/internal/adapter/postgres"
 	stanHandler "consumer/internal/adapter/stan"
-
 	"consumer/internal/core/service"
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
 )
 
-// @title           WB Order consumer service API
-// @version         1.0
-// @description     This is a sample server for consuming orders over nats.
-// @termsOfService  http://swagger.io/terms/
+//	@title			WB Order consumer service API
+//	@version		1.0
+//	@description	This is a sample server for consuming orders over nats.
+//	@termsOfService	http://swagger.io/terms/
 
-// @contact.name   API Support
-// @contact.url    t.me/@k_zelenin
-// @contact.email  nice.speed.boy@yandex.ru
+//	@contact.name	API Support
+//	@contact.url	t.me/@k_zelenin
+//	@contact.email	nice.speed.boy@yandex.ru
 
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      localhost:8080
-// @BasePath  /api/v1
+//	@host		localhost:8080
+//	@BasePath	/api/v1
 
-// @securityDefinitions.basic  NoAuth
+//	@securityDefinitions.basic	NoAuth
 
-// @externalDocs.description  OpenAPI
-// @externalDocs.url          bit.ly/wb-golang-task
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			bit.ly/wb-golang-task
 
 func loadEnv() {
 	// Init env
@@ -45,9 +45,8 @@ func loadEnv() {
 	}
 }
 
-func initDb() *pgRepository.DB {
+func initDb(ctx context.Context) *pgRepository.DB {
 	// Init database
-	ctx := context.Background()
 	db, err := pgRepository.NewDBConnection(ctx, &pgRepository.Credentials{
 		User:     os.Getenv("POSTGRES_USER"),
 		Password: os.Getenv("POSTGRES_PASSWORD"),
@@ -79,8 +78,6 @@ func initStan() *stanHandler.Stan {
 		os.Exit(1)
 	}
 
-	stanInstance.Subscribe()
-
 	slog.Info("Connection to stan was established")
 
 	return stanInstance
@@ -100,8 +97,11 @@ func initHttp(orderService *service.OrderService) {
 		Host: os.Getenv("CONSUMER_HOST"),
 		Port: os.Getenv("CONSUMER_PORT"),
 	}
-
-	slog.Info("Starting the HTTP server on %s:%s", httpCredentials)
+	msg := fmt.Sprintf("Starting the HTTP server on %s:%s",
+		httpCredentials.Host,
+		httpCredentials.Port,
+	)
+	slog.Info(msg)
 	err = router.Serve(httpCredentials)
 
 	if err != nil {
@@ -112,14 +112,17 @@ func initHttp(orderService *service.OrderService) {
 
 func main() {
 	loadEnv()
-	db := initDb()
-	defer db.Close()
 
-	ns := initStan()
-	defer ns.Close()
+	ctx := context.Background()
+
+	db := initDb(ctx)
+	defer db.Close()
 
 	cache := cacheRepository.NewOrderCacheRepository()
 	pg := pgRepository.NewPostgresRepository(db)
+
+	ns := initStan()
+	defer ns.Close()
 
 	ordSvc, err := service.NewOrderService(pg, cache)
 	if err != nil {
@@ -127,13 +130,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	ns.Subscribe(ctx, ordSvc)
+
 	initHttp(ordSvc)
-
-	slog.Info("waiting for messages...")
-
-	for {
-		time.Sleep(time.Second * 5)
-	}
-
-	// server listen
 }

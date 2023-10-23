@@ -2,6 +2,7 @@ package httpHandler
 
 import (
 	"consumer/internal/core/port"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,21 +30,25 @@ type getOrderRequest struct {
 // @Tags         Order
 // @Accept       json
 // @Produce      json
-// @Param        order_uid   path      string  true  "Order UID"
+// @Param        uid   path      string  true  "Order UID"
 // @Success      200  {object}  OrderResponse
 // @Failure      400  {object}  ErrorResponse
 // @Failure      404  {object}  ErrorResponse
 // @Failure      500  {object}  ErrorResponse
-// @Router       /order/{uid} [get]
-func (h *OrderHandler) GetOrderById(ctx *gin.Context) {
+// @Router       /v1/order/{uid} [get]
+func (h *OrderHandler) GetOrderByUId(ctx *gin.Context) {
 	var req getOrderRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
+		fmt.Println(err)
 		validationError(ctx, err)
 		return
 	}
 
+	fmt.Println("request payload: ", req)
+
 	order, err := h.svc.GetOrderByUid(ctx, req.UID)
 	if err != nil {
+		fmt.Println(err)
 		handleError(ctx, err)
 		return
 	}

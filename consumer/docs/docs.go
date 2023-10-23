@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/order/{uid}": {
+        "/v1/order/{uid}": {
             "get": {
                 "description": "Get order with related entities by order_uid",
                 "consumes": [
@@ -32,7 +32,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Order UID",
-                        "name": "order_uid",
+                        "name": "uid",
                         "in": "path",
                         "required": true
                     }
@@ -79,7 +79,7 @@ const docTemplate = `{
                     "example": "Kiryat Mozkin"
                 },
                 "email": {
-                    "description": "TODO validate",
+                    "description": "TODO: validate",
                     "type": "string",
                     "example": "test@gmail.com"
                 },
@@ -87,12 +87,8 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Testov"
                 },
-                "order_uid": {
-                    "type": "string",
-                    "example": "b563feb7b2b84b6test"
-                },
                 "phone": {
-                    "description": "TODO validate",
+                    "description": "TODO: validate",
                     "type": "string",
                     "example": "+9720000000"
                 },
@@ -101,6 +97,7 @@ const docTemplate = `{
                     "example": "Kraiot"
                 },
                 "zip": {
+                    "description": "TODO: validate",
                     "type": "string",
                     "example": "2639809"
                 }
@@ -130,32 +127,31 @@ const docTemplate = `{
                     "example": "b563feb7b2b84b6test"
                 },
                 "price": {
-                    "description": "TODO decimal",
-                    "type": "string",
-                    "example": "453"
+                    "type": "number",
+                    "example": 453
                 },
                 "rid": {
                     "type": "string",
                     "example": "ab4219087a764ae0btest"
                 },
                 "sale": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 30
                 },
                 "size": {
-                    "type": "integer",
-                    "example": 0
+                    "type": "string",
+                    "example": "0"
                 },
                 "status": {
                     "type": "integer",
                     "example": 202
                 },
                 "total_price": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 317
                 },
                 "track_number": {
-                    "description": "TODO DRY",
+                    "description": "get it from order",
                     "type": "string",
                     "example": "WBILMTESTTRACK"
                 }
@@ -165,7 +161,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "amount": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 1817
                 },
                 "bank": {
@@ -176,20 +172,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "custom_fee": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 0
                 },
                 "delivery_cost": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 1500
                 },
                 "goods_total": {
-                    "type": "integer",
+                    "type": "number",
                     "example": 317
                 },
                 "payment_dt": {
-                    "type": "integer",
-                    "example": 1637907727
+                    "type": "string",
+                    "example": "1637907727"
                 },
                 "provider": {
                     "type": "string",
@@ -210,10 +206,6 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Error message"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
                 }
             }
         },
@@ -259,8 +251,8 @@ const docTemplate = `{
                     "example": "en"
                 },
                 "oof_shard": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "string",
+                    "example": "1"
                 },
                 "order_uid": {
                     "description": "19 sumbols uuid? // maybe type of uuid",
@@ -271,8 +263,8 @@ const docTemplate = `{
                     "$ref": "#/definitions/domain.Payment"
                 },
                 "shardkey": {
-                    "type": "integer",
-                    "example": 9
+                    "type": "string",
+                    "example": "9"
                 },
                 "sm_id": {
                     "type": "integer",

@@ -7,10 +7,9 @@ import (
 
 // CreateItem creates a new Item record in the database
 // TODO: Try to answer why we're returning pointer insted of actual value? Where that value is? Leaking or not?
-func (pr *PostgresRepository) CreateItems(ctx context.Context, Items *[]*domain.Item) (*[]*domain.Item, error) {
+func (pr *PostgresRepository) CreateItems(ctx context.Context, Order *domain.Order) (*[]*domain.Item, error) {
 	sql := `INSERT INTO items (
 		chrt_id,
-		track_number,
 		price,
 		rid,
 		name,
@@ -21,17 +20,16 @@ func (pr *PostgresRepository) CreateItems(ctx context.Context, Items *[]*domain.
 		brand,
 		status,
 		order_uid
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	RETURNING id` // test perfomance
 
-	res := make([]*domain.Item, len(*Items))
+	res := make([]*domain.Item, len(Order.Items))
 
 	// TODO: OPTIMIZE THAT SHIT!!!!!
-	for i, Item := range *Items {
-		itemRes := Item
+	for i, Item := range Order.Items {
+		itemRes := *Item
 		err := pr.db.QueryRow(ctx, sql,
 			&Item.ChrtId,
-			&Item.TrackNumber,
 			&Item.Price,
 			&Item.Rid,
 			&Item.Name,
@@ -41,9 +39,11 @@ func (pr *PostgresRepository) CreateItems(ctx context.Context, Items *[]*domain.
 			&Item.NmId,
 			&Item.Brand,
 			&Item.Status,
+			&Order.Uid,
 		).Scan(&itemRes.ID)
 
-		res[i] = itemRes
+		itemRes.TrackNumber = Order.TrackNumber
+		res[i] = &itemRes
 
 		if err != nil {
 			return nil, err
@@ -56,9 +56,10 @@ func (pr *PostgresRepository) CreateItems(ctx context.Context, Items *[]*domain.
 func (pr *PostgresRepository) GetItemsByOrderUid(
 	ctx context.Context,
 	uid string,
+	trackNumber string,
 ) (*[]*domain.Item, error) {
 	// TODO: extend with fields
-	sql := `SELECT * FROM items WHERE uid = $1`
+	sql := `SELECT * FROM items WHERE order_uid = $1`
 
 	rows, err := pr.db.Query(ctx, sql, uid)
 
@@ -75,7 +76,6 @@ func (pr *PostgresRepository) GetItemsByOrderUid(
 		err := rows.Scan(
 			&item.ID,
 			&item.ChrtId,
-			&item.TrackNumber,
 			&item.Price,
 			&item.Rid,
 			&item.Name,
@@ -91,6 +91,8 @@ func (pr *PostgresRepository) GetItemsByOrderUid(
 		if err != nil {
 			return nil, err
 		}
+
+		item.TrackNumber = trackNumber
 
 		items = append(items, &item)
 	}

@@ -9,7 +9,7 @@ import (
 // TODO: Try to answer why we're returning pointer insted of actual value? Where that value is? Leaking or not?
 func (pr *PostgresRepository) CreatePayment(
 	ctx context.Context,
-	payment *domain.Payment,
+	Payment *domain.Payment,
 ) (*domain.Payment, error) {
 	sql := `INSERT INTO payments (
 		transaction,
@@ -21,23 +21,38 @@ func (pr *PostgresRepository) CreatePayment(
 		bank,
 		delivery_cost,
 		goods_total,
-		custom_fee
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-	RETURNING id` // test perfomance
+		custom_fee,
+		order_uid
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	RETURNING *` // test perfomance
 
-	res := *payment
+	res := *Payment
 	err := pr.db.QueryRow(ctx, sql,
-		&payment.Transaction,
-		&payment.RequestId,
-		&payment.Currency,
-		&payment.Provider,
-		&payment.Amount,
-		&payment.PaymentDt,
-		&payment.Bank,
-		&payment.DeliveryCost,
-		&payment.GoodsTotal,
-		&payment.CustomFee,
-	).Scan(&res.ID)
+		&Payment.Transaction,
+		&Payment.RequestId,
+		&Payment.Currency,
+		&Payment.Provider,
+		&Payment.Amount,
+		&Payment.PaymentDt,
+		&Payment.Bank,
+		&Payment.DeliveryCost,
+		&Payment.GoodsTotal,
+		&Payment.CustomFee,
+		&Payment.OrderUid,
+	).Scan(
+		&res.ID,
+		&res.Transaction,
+		&res.RequestId,
+		&res.Currency,
+		&res.Provider,
+		&res.Amount,
+		&res.PaymentDt,
+		&res.Bank,
+		&res.DeliveryCost,
+		&res.GoodsTotal,
+		&res.CustomFee,
+		&res.OrderUid,
+	)
 
 	if err != nil {
 		return nil, err
@@ -46,9 +61,9 @@ func (pr *PostgresRepository) CreatePayment(
 	return &res, nil
 }
 
-func (pr *PostgresRepository) GetPaymentById(
+func (pr *PostgresRepository) GetPaymentByUid(
 	ctx context.Context,
-	id int,
+	uid string,
 ) (*domain.Payment, error) {
 	sql := `SELECT
 		id,
@@ -61,22 +76,24 @@ func (pr *PostgresRepository) GetPaymentById(
 		bank,
 		delivery_cost,
 		goods_total,
-		custom_fee
-	FROM payments WHERE id = $1`
+		custom_fee,
+		order_uid
+	FROM payments WHERE order_uid = $1`
 
 	res := domain.Payment{}
-	err := pr.db.QueryRow(ctx, sql, id).Scan(
-		res.ID,
-		res.Transaction,
-		res.RequestId,
-		res.Currency,
-		res.Provider,
-		res.Amount,
-		res.PaymentDt,
-		res.Bank,
-		res.DeliveryCost,
-		res.GoodsTotal,
-		res.CustomFee,
+	err := pr.db.QueryRow(ctx, sql, uid).Scan(
+		&res.ID,
+		&res.Transaction,
+		&res.RequestId,
+		&res.Currency,
+		&res.Provider,
+		&res.Amount,
+		&res.PaymentDt,
+		&res.Bank,
+		&res.DeliveryCost,
+		&res.GoodsTotal,
+		&res.CustomFee,
+		&res.OrderUid,
 	)
 
 	if err != nil {

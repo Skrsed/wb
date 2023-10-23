@@ -6,6 +6,7 @@ import (
 	"consumer/internal/core/domain"
 	"context"
 	"errors"
+	"fmt"
 )
 
 type OrderService struct {
@@ -27,15 +28,24 @@ func (svc *OrderService) GetOrderByUid(ctx context.Context, uid string) (*domain
 	cachedOrder := svc.orderCache.GetOrderByUid(uid)
 
 	if cachedOrder != nil {
+		fmt.Println("goted from cache", cachedOrder)
 		return cachedOrder, nil
 	}
 
-	order, errOrder := svc.pg.GetOrderByUid(ctx, uid)
-	delivery, errDelivery := svc.pg.GetDeliveryById(ctx, order.DeliveryId)
-	payment, errPayment := svc.pg.GetPaymentById(ctx, order.PaymentId)
-	items, errItems := svc.pg.GetItemsByOrderUid(ctx, uid)
+	order, err := svc.pg.GetOrderByUid(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := errors.Join(errOrder, errDelivery, errPayment, errItems); err != nil {
+	errs := []error{}
+	delivery, err := svc.pg.GetDeliveryByUid(ctx, order.Uid)
+	errs = append(errs, err)
+	payment, err := svc.pg.GetPaymentByUid(ctx, order.Uid)
+	errs = append(errs, err)
+	items, err := svc.pg.GetItemsByOrderUid(ctx, uid, order.TrackNumber)
+	errs = append(errs, err)
+
+	if err := errors.Join(errs...); err != nil {
 		return nil, err
 	}
 
@@ -46,3 +56,22 @@ func (svc *OrderService) GetOrderByUid(ctx context.Context, uid string) (*domain
 
 	return &resultOrder, nil
 }
+
+func (svc *OrderService) SaveOrder(ctx context.Context, order *domain.Order) error {
+	order, err := svc.pg.CreateOrderCascade(ctx, order)
+	if err != nil {
+		return err
+	}
+
+	err = svc.orderCache.SaveOrder(*order)
+	if err != nil {
+		fmt.Println("Error while saving in cache", err)
+		return err
+	}
+
+	return nil
+}
+
+// func (svc *OrderService) LoadCacheFromDb(ctx context.Context) error {
+// 	orders, err := svc.pg.GetAllOrders(ctx)
+// }

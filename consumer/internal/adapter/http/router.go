@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -30,15 +31,16 @@ func NewRouter(orderHandler *OrderHandler) (*Router, error) {
 	router := gin.New()
 
 	router.Use(gin.Recovery())
+	router.Use(cors.Default())
 
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := router.Group("/v1")
 	{
 		user := v1.Group("/order")
 		{
-			user.GET("/:uid", orderHandler.GetOrderById)
-			user.GET("/list", orderHandler.GetListOrders)
+			user.GET("/:uid", orderHandler.GetOrderByUId)
+			//user.GET("/list", orderHandler.GetListOrders)
 		}
 	}
 

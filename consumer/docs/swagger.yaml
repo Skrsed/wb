@@ -8,23 +8,21 @@ definitions:
         example: Kiryat Mozkin
         type: string
       email:
-        description: TODO validate
+        description: 'TODO: validate'
         example: test@gmail.com
         type: string
       name:
         example: Test Testov
         type: string
-      order_uid:
-        example: b563feb7b2b84b6test
-        type: string
       phone:
-        description: TODO validate
+        description: 'TODO: validate'
         example: "+9720000000"
         type: string
       region:
         example: Kraiot
         type: string
       zip:
+        description: 'TODO: validate'
         example: "2639809"
         type: string
     type: object
@@ -46,26 +44,25 @@ definitions:
         example: b563feb7b2b84b6test
         type: string
       price:
-        description: TODO decimal
-        example: "453"
-        type: string
+        example: 453
+        type: number
       rid:
         example: ab4219087a764ae0btest
         type: string
       sale:
         example: 30
-        type: integer
+        type: number
       size:
-        example: 0
-        type: integer
+        example: "0"
+        type: string
       status:
         example: 202
         type: integer
       total_price:
         example: 317
-        type: integer
+        type: number
       track_number:
-        description: TODO DRY
+        description: get it from order
         example: WBILMTESTTRACK
         type: string
     type: object
@@ -73,7 +70,7 @@ definitions:
     properties:
       amount:
         example: 1817
-        type: integer
+        type: number
       bank:
         example: alpha
         type: string
@@ -81,16 +78,16 @@ definitions:
         type: string
       custom_fee:
         example: 0
-        type: integer
+        type: number
       delivery_cost:
         example: 1500
-        type: integer
+        type: number
       goods_total:
         example: 317
-        type: integer
+        type: number
       payment_dt:
-        example: 1637907727
-        type: integer
+        example: "1637907727"
+        type: string
       provider:
         example: wbpay
         type: string
@@ -105,9 +102,6 @@ definitions:
       message:
         example: Error message
         type: string
-      success:
-        example: false
-        type: boolean
     type: object
   httpHandler.OrderResponse:
     properties:
@@ -135,8 +129,8 @@ definitions:
         example: en
         type: string
       oof_shard:
-        example: 1
-        type: integer
+        example: "1"
+        type: string
       order_uid:
         description: 19 sumbols uuid? // maybe type of uuid
         example: b563feb7b2b84b6test
@@ -144,8 +138,8 @@ definitions:
       payment:
         $ref: '#/definitions/domain.Payment'
       shardkey:
-        example: 9
-        type: integer
+        example: "9"
+        type: string
       sm_id:
         example: 99
         type: integer
@@ -162,7 +156,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /order/{uid}:
+  /v1/order/{uid}:
     get:
       consumes:
       - application/json
@@ -170,7 +164,7 @@ paths:
       parameters:
       - description: Order UID
         in: path
-        name: order_uid
+        name: uid
         required: true
         type: string
       produces:

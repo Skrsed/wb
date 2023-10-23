@@ -1,65 +1,73 @@
 BEGIN;
 
-DROP TABLE IF EXISTS delivery;
-CREATE TABLE delivery (
-    id integer SERIAL PRIMARY KEY
-    name varchar,
-    phone varchar,
-    zip varchar,
-    city varchar,
-    address varchar,
-    region varchar,
-    email varchar,
+CREATE TYPE ECURRENCY AS ENUM (
+ 'USD', 
+ 'RUB', 
+ 'EUR',
+ 'JPY'
 );
 
-DROP TABLE IF EXISTS items;
-CREATE TABLE items (
-    id integer SERIAL PRIMARY KEY,
-    chrt_id integer,
-    track_number varchar,
-    price varchar,
-    rid varchar,
-    name varchar,
-    sale integer,
-    size integer,
-    total_price integer,
-    nm_id integer,
-    brand varchar,
-    status integer,
+CREATE TYPE ELOCALE AS ENUM (
+    'en',
+    'ru',
+    'kz',
+    'by'
 );
 
-DROP TABLE IF EXISTS payments;
-CREATE TABLE payments (
-    id integer SERIAL PRIMARY KEY
-    transaction varchar,
-    request_id varchar,
-    currency varchar,
-    provider varchar,
-    amount integer,
-    payment_dt integer,
-    bank varchar,
-    delivery_cost integer,
-    goods_total integer,
-    custom_fee integer,
-    order_uid varchar REFERENCES delivery,
-);
-
-DROP TABLE IF EXISTS orders;
 CREATE TABLE orders (
-    order_uid varchar,
-    track_number varchar,
-    entry varchar,
-    -- Why fk's should be here
-    delivery_id integer REFERENCES delivery,
-    payment_id integer REFERENCES payments,
-    locale varchar,
-    internal_signature varchar,
-    customer_id varchar,
-    delivery_service varchar,
-    shardkey integer,
-    sm_id integer,
-    date_created timestamp,
-    oof_shard integer
+    order_uid VARCHAR PRIMARY KEY,
+    track_number VARCHAR NOT NULL,
+    entry VARCHAR NOT NULL,
+    locale ELOCALE NOT NULL,
+    internal_signature VARCHAR,
+    customer_id VARCHAR NOT NULL,
+    delivery_service VARCHAR,
+    shardkey VARCHAR NOT NULL,
+    sm_id INTEGER NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    oof_shard VARCHAR NOT NULL
+);
+
+CREATE TABLE delivery (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    phone VARCHAR NOT NULL,
+    zip VARCHAR NOT NULL,
+    city VARCHAR NOT NULL,
+    address VARCHAR NOT NULL,
+    region VARCHAR NOT NULL,
+    email VARCHAR NOT NULL,
+    order_uid VARCHAR REFERENCES orders (order_uid)
+);
+
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    transaction VARCHAR NOT NULL,
+    request_id VARCHAR,
+    currency ECURRENCY NOT NULL,
+    provider VARCHAR NOT NULL,
+    amount NUMERIC NOT NULL,
+    payment_dt TIMESTAMP NOT NULL,
+    bank VARCHAR NOT NULL,
+    delivery_cost NUMERIC NOT NULL,
+    goods_total NUMERIC NOT NULL,
+    custom_fee NUMERIC NOT NULL,
+    order_uid VARCHAR REFERENCES orders (order_uid)
+);
+
+CREATE TABLE items (
+    id SERIAL PRIMARY KEY,
+    chrt_id INTEGER NOT NULL,
+    price NUMERIC NOT NULL,
+    rid VARCHAR NOT NULL,
+    name VARCHAR NOT NULL,
+    sale NUMERIC NOT NULL,
+    size VARCHAR NOT NULL,
+    total_price NUMERIC NOT NULL,
+    nm_id INTEGER NOT NULL,
+    brand VARCHAR NOT NULL,
+    status SMALLINT NOT NULL,
+    order_uid VARCHAR REFERENCES orders
 );
 
 COMMIT;

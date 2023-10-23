@@ -13,37 +13,44 @@ func (pr *PostgresRepository) CreateOrderCascade(
 	ctx context.Context,
 	Order *domain.Order,
 ) (*domain.Order, error) {
-	// Create a helper function for preparing failure results.
-	fail := func(err error) (*domain.Order, error) {
-		return nil, fmt.Errorf("CreateOrder: %v", err)
-	}
-
-	// Get a Tx for making transaction requests.
-	// TODO: Check avalivable options
-	tx, err := pr.db.BeginTx(ctx, pgx.TxOptions{})
+	// Get a transact repository for making transaction requests.
+	prtx, err := pr.StartTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		return fail(err)
+		return nil, err
 	}
 	// Defer a rollback in case anything fails.
-	defer tx.Rollback(ctx)
+	defer prtx.Rollback(ctx)
 
-	order, e1 := pr.CreateOrder(ctx, Order)
-	payment, e2 := pr.CreatePayment(ctx, &Order.Payment)
+	order := &domain.Order{}
+
+	items := &[]*domain.Item{}
+	errs := []error{}
+
+	order, err = prtx.CreateOrder(ctx, Order)
 	if err != nil {
-		return fail(err)
-	}
-	delivery, e3 := pr.CreateDelivery(ctx, &Order.Delivery)
-	if err != nil {
-		return fail(err)
-	}
-	items, e4 := pr.CreateItems(ctx, &Order.Items)
-	if err != nil {
-		return fail(err)
+		return nil, err
 	}
 
-	// Commit the transaction.
-	if err := errors.Join(tx.Commit(ctx), e1, e2, e3, e4); err != nil {
-		return fail(err)
+	order.Payment = Order.Payment
+	order.Payment.OrderUid = Order.Uid
+	payment, err := prtx.CreatePayment(ctx, &order.Payment)
+	errs = append(errs, err)
+
+	order.Delivery = Order.Delivery
+	order.Delivery.OrderUid = Order.Uid
+	delivery, err := prtx.CreateDelivery(ctx, &order.Delivery)
+	errs = append(errs, err)
+
+	items, err = prtx.CreateItems(ctx, Order)
+	errs = append(errs, err)
+
+	if err = errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	//Commit the transaction.
+	if err = prtx.Commit(ctx); err != nil {
+		return nil, err
 	}
 
 	order.Payment = *payment
@@ -56,7 +63,10 @@ func (pr *PostgresRepository) CreateOrderCascade(
 
 // CreateOrder creates a new Order record in the database
 // TODO: Try to answer why we're returning pointer insted of actual value? Where that value is? Leaking or not?
-func (pr *PostgresRepository) CreateOrder(ctx context.Context, Order *domain.Order) (*domain.Order, error) {
+func (pr *PostgresRepository) CreateOrder(
+	ctx context.Context,
+	Order *domain.Order,
+) (*domain.Order, error) {
 	sql := `INSERT INTO orders (
 		order_uid,
 		track_number,
@@ -96,14 +106,12 @@ func (pr *PostgresRepository) CreateOrder(ctx context.Context, Order *domain.Ord
 
 func (pr *PostgresRepository) GetOrderByUid(
 	ctx context.Context,
-	uuid string,
+	uid string,
 ) (*domain.Order, error) {
 	sql := `SELECT
 		order_uid,
 		track_number,
 		entry,
-		delivery_id,
-		payment_id,
 		locale,
 		internal_signature,
 		customer_id,
@@ -112,28 +120,45 @@ func (pr *PostgresRepository) GetOrderByUid(
 		sm_id,
 		date_created,
 		oof_shard
-	FROM orders WHERE uid = $1`
+	FROM orders WHERE order_uid = $1`
+
+	fmt.Println("uid - ", uid)
 
 	res := domain.Order{}
-	err := pr.db.QueryRow(ctx, sql, uuid).Scan(
-		res.Uid,
-		res.TrackNumber,
-		res.Entry,
-		res.DeliveryId,
-		res.PaymentId,
-		res.Locale,
-		res.InternalSignature,
-		res.CustomerId,
-		res.DeliveryService,
-		res.Shardkey,
-		res.SmId,
-		res.DateCreated,
-		res.OofShard,
+	err := pr.db.QueryRow(ctx, sql, uid).Scan(
+		&res.Uid,
+		&res.TrackNumber,
+		&res.Entry,
+		&res.Locale,
+		&res.InternalSignature,
+		&res.CustomerId,
+		&res.DeliveryService,
+		&res.Shardkey,
+		&res.SmId,
+		&res.DateCreated,
+		&res.OofShard,
 	)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
 	return &res, nil
 }
+
+// func (pr *PostgresRepository) GetAllOrders(ctx context.Context) (*[]*domain.Order, error) {
+// 	rows, err := pr.db.Query("SELECT * FROM orders")
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	var items []*domain.Order
+
+// 	// Loop through rows, using Scan to assign column data to struct fields.
+// 	for rows.Next() {
+// 		var item domain.Order
+// 	}
+// }
