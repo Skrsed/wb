@@ -130,6 +130,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	ordSvc.LoadCacheFromDb(ctx)
+
 	ns.Subscribe(ctx, ordSvc)
 
 	initHttp(ordSvc)

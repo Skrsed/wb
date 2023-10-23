@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -20,6 +21,11 @@ func (pr *PostgresRepository) CreateOrderCascade(
 	}
 	// Defer a rollback in case anything fails.
 	defer prtx.Rollback(ctx)
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 
 	order := &domain.Order{}
 
@@ -98,6 +104,7 @@ func (pr *PostgresRepository) CreateOrder(
 	).Scan(&res.Uid)
 
 	if err != nil {
+		slog.Error("Error scanning order result", "error", err)
 		return nil, err
 	}
 
@@ -122,8 +129,6 @@ func (pr *PostgresRepository) GetOrderByUid(
 		oof_shard
 	FROM orders WHERE order_uid = $1`
 
-	fmt.Println("uid - ", uid)
-
 	res := domain.Order{}
 	err := pr.db.QueryRow(ctx, sql, uid).Scan(
 		&res.Uid,
@@ -147,18 +152,50 @@ func (pr *PostgresRepository) GetOrderByUid(
 	return &res, nil
 }
 
-// func (pr *PostgresRepository) GetAllOrders(ctx context.Context) (*[]*domain.Order, error) {
-// 	rows, err := pr.db.Query("SELECT * FROM orders")
+func (pr *PostgresRepository) GetAllOrders(ctx context.Context) (*map[string]*domain.Order, error) {
+	rows, err := pr.db.Query(ctx, "SELECT * from orders")
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-// 	var items []*domain.Order
+	orders := map[string]*domain.Order{}
+	uids := ""
 
-// 	// Loop through rows, using Scan to assign column data to struct fields.
-// 	for rows.Next() {
-// 		var item domain.Order
-// 	}
-// }
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var order domain.Order
+		err := rows.Scan(
+			&order.Uid,
+			&order.TrackNumber,
+			&order.Entry,
+			&order.Locale,
+			&order.InternalSignature,
+			&order.CustomerId,
+			&order.DeliveryService,
+			&order.Shardkey,
+			&order.SmId,
+			&order.DateCreated,
+			&order.OofShard,
+		)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		order.Items = make([]*domain.Item, 0, 100)
+		orders[order.Uid] = &order
+		uids += fmt.Sprintf(",'%s'", order.Uid)
+	}
+	if len(orders) == 0 {
+		return nil, nil
+	}
+
+	uids = uids[1:]
+	pr.PopulateMapWithDelivery(ctx, &orders, uids)
+	pr.PopulateMapWithPayments(ctx, &orders, uids)
+
+	pr.PopulateMapWithItems(ctx, &orders, uids)
+
+	return &orders, nil
+}

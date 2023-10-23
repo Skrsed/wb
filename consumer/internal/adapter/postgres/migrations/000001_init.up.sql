@@ -47,7 +47,7 @@ CREATE TABLE payments (
     currency ECURRENCY NOT NULL,
     provider VARCHAR NOT NULL,
     amount NUMERIC NOT NULL,
-    payment_dt TIMESTAMP NOT NULL,
+    payment_dt INTEGER NOT NULL,
     bank VARCHAR NOT NULL,
     delivery_cost NUMERIC NOT NULL,
     goods_total NUMERIC NOT NULL,

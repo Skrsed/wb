@@ -52,7 +52,7 @@ func (nsc *Stan) Subscribe(ctx context.Context, ordSvc *service.OrderService) er
 
 func onMessage(ctx context.Context, ordSvc port.OrderService) func(m *stan.Msg) {
 	return func(m *stan.Msg) {
-		order, err := UnmarshalTheMessage(m)
+		order, err := UnmarshalMessage(m)
 
 		if err != nil {
 			slog.Error("Error while unmarshaling the message", "error", err)
@@ -65,13 +65,12 @@ func onMessage(ctx context.Context, ordSvc port.OrderService) func(m *stan.Msg) 
 	}
 }
 
-func UnmarshalTheMessage(m *stan.Msg) (*domain.Order, error) {
+func UnmarshalMessage(m *stan.Msg) (*domain.Order, error) {
 	order := domain.Order{}
 
 	err := json.Unmarshal(m.Data, &order)
-	//err = validator.Struct(&order)
 	if err != nil {
-		fmt.Printf("error while unmarshalling message to model : %s", err.Error())
+		slog.Error("Error while unmarshalling message to model", "error", err.Error())
 		return nil, err
 	}
 

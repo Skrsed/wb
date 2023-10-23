@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 )
 
 type OrderService struct {
@@ -28,7 +29,7 @@ func (svc *OrderService) GetOrderByUid(ctx context.Context, uid string) (*domain
 	cachedOrder := svc.orderCache.GetOrderByUid(uid)
 
 	if cachedOrder != nil {
-		fmt.Println("goted from cache", cachedOrder)
+		slog.Info("row was finded in cache")
 		return cachedOrder, nil
 	}
 
@@ -63,7 +64,11 @@ func (svc *OrderService) SaveOrder(ctx context.Context, order *domain.Order) err
 		return err
 	}
 
-	err = svc.orderCache.SaveOrder(*order)
+	if order == nil {
+		return nil
+	}
+
+	err = svc.orderCache.SaveOrder(order)
 	if err != nil {
 		fmt.Println("Error while saving in cache", err)
 		return err
@@ -72,6 +77,16 @@ func (svc *OrderService) SaveOrder(ctx context.Context, order *domain.Order) err
 	return nil
 }
 
-// func (svc *OrderService) LoadCacheFromDb(ctx context.Context) error {
-// 	orders, err := svc.pg.GetAllOrders(ctx)
-// }
+func (svc *OrderService) LoadCacheFromDb(ctx context.Context) error {
+	orders, err := svc.pg.GetAllOrders(ctx)
+	if err != nil {
+		return err
+	}
+	if orders == nil {
+		return nil
+	}
+
+	svc.orderCache.PutAll(orders)
+
+	return nil
+}

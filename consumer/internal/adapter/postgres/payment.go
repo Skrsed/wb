@@ -3,6 +3,7 @@ package pgRepository
 import (
 	"consumer/internal/core/domain"
 	"context"
+	"fmt"
 )
 
 // CreatePayment creates a new payment record in the database
@@ -101,4 +102,40 @@ func (pr *PostgresRepository) GetPaymentByUid(
 	}
 
 	return &res, nil
+}
+
+func (pr *PostgresRepository) PopulateMapWithPayments(
+	ctx context.Context,
+	orders *map[string]*domain.Order,
+	uids string,
+) error {
+	rows, err := pr.db.Query(ctx, "SELECT * from payments")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var payment domain.Payment
+		err := rows.Scan(
+			&payment.ID,
+			&payment.Transaction,
+			&payment.RequestId,
+			&payment.Currency,
+			&payment.Provider,
+			&payment.Amount,
+			&payment.PaymentDt,
+			&payment.Bank,
+			&payment.DeliveryCost,
+			&payment.GoodsTotal,
+			&payment.CustomFee,
+			&payment.OrderUid,
+		)
+
+		fmt.Println(err)
+
+		(*orders)[payment.OrderUid].Payment = payment
+	}
+
+	return nil
 }

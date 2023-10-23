@@ -11,12 +11,12 @@ type Order struct {
 	Delivery          Delivery  `json:"delivery" validate:"required"`
 	Payment           Payment   `json:"payment" validate:"required"`
 	Items             []*Item   `json:"items" validate:"required"`
-	Locale            string    `json:"locale" example:"en"`
+	Locale            string    `json:"locale" fake:"{randomstring:[en,ru,kz]}"`
 	InternalSignature string    `json:"internal_signature"`
 	CustomerId        string    `json:"customer_id" example:"test"`
 	DeliveryService   string    `json:"delivery_service" example:"meest"`
 	Shardkey          string    `json:"shardkey" example:"9"`
-	SmId              int       `json:"sm_id" example:"99"`
-	DateCreated       time.Time `json:"date_created" example:"2021-11-26T06:22:19Z"`
+	SmId              int32     `json:"sm_id" example:"99"`
+	DateCreated       time.Time `json:"date_created" fake:"{year}-{month}-{day}T{hour}:{minute}:{second}Z" format:"2006-01-02T06:22:19Z"`
 	OofShard          string    `json:"oof_shard" example:"1"`
 }

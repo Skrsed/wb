@@ -90,3 +90,36 @@ func (pr *PostgresRepository) GetDeliveryByUid(
 
 	return &res, nil
 }
+
+func (pr *PostgresRepository) PopulateMapWithDelivery(
+	ctx context.Context,
+	orders *map[string]*domain.Order,
+	uids string,
+) error {
+	rows, err := pr.db.Query(ctx, "SELECT * from delivery")
+	if err != nil {
+		fmt.Println(err)
+
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var delivery domain.Delivery
+		rows.Scan(
+			&delivery.ID,
+			&delivery.Name,
+			&delivery.Phone,
+			&delivery.Zip,
+			&delivery.City,
+			&delivery.Address,
+			&delivery.Region,
+			&delivery.Email,
+			&delivery.OrderUid,
+		)
+
+		(*orders)[delivery.OrderUid].Delivery = delivery
+	}
+
+	return nil
+}

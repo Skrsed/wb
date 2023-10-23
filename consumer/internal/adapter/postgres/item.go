@@ -103,3 +103,40 @@ func (pr *PostgresRepository) GetItemsByOrderUid(
 
 	return &items, nil
 }
+
+func (pr *PostgresRepository) PopulateMapWithItems(
+	ctx context.Context,
+	orders *map[string]*domain.Order,
+	uids string,
+) error {
+	rows, err := pr.db.Query(
+		ctx,
+		"SELECT * from items",
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item domain.Item
+		rows.Scan(
+			&item.ID,
+			&item.ChrtId,
+			&item.Price,
+			&item.Rid,
+			&item.Name,
+			&item.Sale,
+			&item.Size,
+			&item.TotalPrice,
+			&item.NmId,
+			&item.Brand,
+			&item.Status,
+			&item.OrderUid,
+		)
+
+		(*orders)[item.OrderUid].Items = append((*orders)[item.OrderUid].Items, &item)
+	}
+
+	return nil
+}

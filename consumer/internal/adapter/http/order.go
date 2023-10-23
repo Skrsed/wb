@@ -44,8 +44,6 @@ func (h *OrderHandler) GetOrderByUId(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("request payload: ", req)
-
 	order, err := h.svc.GetOrderByUid(ctx, req.UID)
 	if err != nil {
 		fmt.Println(err)
