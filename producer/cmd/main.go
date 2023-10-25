@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"producer/domain"
+	stream "producer/repository"
+	"producer/utils"
 	"time"
-	"wb/producer/domain"
-	stream "wb/producer/repository"
-	"wb/producer/utils"
 
 	"log/slog"
 
