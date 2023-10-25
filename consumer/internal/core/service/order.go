@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type OrderService struct {
@@ -58,16 +60,20 @@ func (svc *OrderService) GetOrderByUid(ctx context.Context, uid string) (*domain
 }
 
 func (svc *OrderService) SaveOrder(ctx context.Context, order *domain.Order) error {
-	order, err := svc.pg.CreateOrderCascade(ctx, order)
+	validate := validator.New()
+	err := validate.Struct(order)
 	if err != nil {
+		slog.Error("SaveOrder error validating order", "error", err)
 		return err
 	}
 
-	if order == nil {
-		return nil
+	newOrder, err := svc.pg.CreateOrderCascade(ctx, order)
+	if err != nil {
+		slog.Error("SaveOrder error saving db", "error", err)
+		return err
 	}
 
-	err = svc.orderCache.SaveOrder(order)
+	err = svc.orderCache.SaveOrder(newOrder)
 	if err != nil {
 		slog.Error("SaveOrder error saving cache", "error", err)
 		return err

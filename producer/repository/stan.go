@@ -17,7 +17,6 @@ func Publish(sc stan.Conn, message string) {
 	err := sc.Publish("wb_orders", []byte(message))
 
 	if err != nil {
-		// TODO: log error
 		slog.Error("Error publishing message", "error", err)
 	}
 }

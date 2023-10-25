@@ -16,7 +16,7 @@ type Order struct {
 	CustomerId        string    `json:"customer_id" example:"test"`
 	DeliveryService   string    `json:"delivery_service" example:"meest"`
 	Shardkey          string    `json:"shardkey" example:"9"`
-	SmId              int32     `json:"sm_id" example:"99"`
-	DateCreated       time.Time `json:"date_created" fake:"{year}-{month}-{day}T{hour}:{minute}:{second}Z" format:"2006-01-02T06:22:19Z"`
+	SmId              int32     `json:"sm_id" example:"99" fake:"{number:1, 2147483647}"`
+	DateCreated       time.Time `json:"date_created" fake:"{date}"`
 	OofShard          string    `json:"oof_shard" example:"1"`
 }

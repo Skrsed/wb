@@ -25,6 +25,8 @@ func main() {
 		var order domain.Order
 		gofakeit.Struct(&order)
 
+		order.TrackNumber = ""
+
 		utils.StructPrettyPrint(order)
 
 		jsonData, _ := json.Marshal(order)
